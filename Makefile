@@ -177,7 +177,8 @@ UPROGS=\
 	_zombie\
 	_shm_cnt\
 	_null\
-	_lab3_test\
+	_lab3_part1test\
+	_lab3_part2test\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -250,6 +251,8 @@ EXTRA=\
 	printf.c umalloc.c uspinlock.c shm_cnt.c\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
+	_lab3_part1test.c\
+	_lab3_part2test.c\
 
 dist:
 	rm -rf dist

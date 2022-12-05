@@ -199,9 +199,9 @@ fork(void)
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
-
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
+  np->stackGrow = curproc->stackGrow;
 
   for(i = 0; i < NOFILE; i++)
     if(curproc->ofile[i])

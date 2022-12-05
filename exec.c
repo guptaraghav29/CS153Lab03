@@ -62,12 +62,23 @@ exec(char *path, char **argv)
 
   // Allocate two pages at the next page boundary.
   // Make the first inaccessible.  Use the second as the user stack.
+  // used to track the size of the address space
+  // we want to start allocation from the kernel base
   sz = PGROUNDUP(sz);
-  if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE)) == 0)
-    goto bad;
-  clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
-  sp = sz;
+  
+  // sp is second user stack which we set to KERNBASE - 1
+  // this is a lower address space than KERNBASE, which is what we are trying to acheive
+  // sp and sz is used to track stack boundaries
+  sp = KERNBASE - 1;
 
+  if((sp = allocuvm(pgdir, KERNBASE - 2 * PGSIZE, KERNBASE)) == 0)
+    goto bad;
+  // clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
+
+  // initializing the size of the stack to 1
+  curproc->stackGrow = 1;
+
+  
   // Push argument strings, prepare rest of stack in ustack.
   for(argc = 0; argv[argc]; argc++) {
     if(argc >= MAXARG)

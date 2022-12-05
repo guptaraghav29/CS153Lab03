@@ -224,7 +224,9 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   char *mem;
   uint a;
 
-  if(newsz >= KERNBASE)
+  // changed this to newsz > KERNBASE instead of >=
+  // because we don't want to include kernbase
+  if(newsz > KERNBASE)
     return 0;
   if(newsz < oldsz)
     return oldsz;
@@ -335,6 +337,25 @@ copyuvm(pde_t *pgdir, uint sz)
     if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0)
       goto bad;
   }
+
+  //need extra handling to copy stack page and page guard
+  /* 
+    change the order of the copy since we are copying page by page
+    so we need to change the order of it
+   */
+  //previosuly virtual memory is consecutive from 0 to curproc->sz()
+  //i is the number of pages
+  // sz is page count
+  // PGSIZE is size of page
+  for(i = 0; i < sz; i += PGSIZE) {
+    if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0) {
+      panic("Panic");
+    }
+    else if(!(*pte & PTE_P)) {
+      goto bad;
+    }
+  }
+
   return d;
 
 bad:

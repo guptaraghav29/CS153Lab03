@@ -14,6 +14,12 @@ extern uint vectors[];  // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
 uint ticks;
 
+ //struct for currrent proc
+struct proc * curproc;
+
+//added variable for page fault
+uint pagefault;
+
 void
 tvinit(void)
 {
@@ -77,6 +83,17 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
+  case T_PGFLT:
+    curproc = myproc();
+    pagefault = rcr2();
+
+    if (pagefault > 0x7FFFFFFF)
+      exit();
+    
+    if (allocuvm(curproc->pgdir, PGROUNDDOWN(pagefault), pagefault) == 0) {
+      cprintf("Page fault, Allocuvm failed, Current number of pages: %d\n", curproc->stackGrow);
+      exit();
+    }
 
   //PAGEBREAK: 13
   default:
